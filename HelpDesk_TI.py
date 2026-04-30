@@ -242,16 +242,6 @@ def prever(texto, vectorizer, modelos, stop_words):
     vetor = vectorizer.transform([texto_limpo])
 
     # Previsões
-    print("\nTexto:", texto)
-    for nome, modelo in modelos.items():
-        if nome == "Gradient Boosting":
-            pred = modelo.predict(vetor.toarray())[0]
-        else:
-            pred = modelo.predict(vetor)[0]
-
-        print(nome, ":", pred)
-
-
     pred_lr = modelos["Logistic Regression"].predict(vetor)[0]
     pred_nb = modelos["Naive Bayes"].predict(vetor)[0]
     pred_gb = modelos["Gradient Boosting"].predict(vetor.toarray())[0]
