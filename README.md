@@ -1,10 +1,8 @@
-Integrantes do Grupo:
+### Integrantes do Grupo
 
 - FELIPE BIAVA FAVARIN
 - MAICON DE OLIVEIRA DA SILVA
 - GABRIEL NOGUEIRA
-
-In[ ]:
 
 Para criar um arquivo de texto com os requisitos / bibliotecas para usar o ambiente Jupyter Notebook
 Após esse comando, no terminal do VsCode, rode: pip install -r requirements.txt
