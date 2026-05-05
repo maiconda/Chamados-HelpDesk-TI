@@ -273,7 +273,15 @@ Desenvolvemos uma interface web interativa utilizando a biblioteca **Streamlit**
 streamlit run app.py
 ```
 
-### Rodando com Docker
+### Rodando com Docker Compose (Recomendado)
+Para facilitar o gerenciamento e garantir que o app funcione através de proxies/túneis:
+
+```bash
+docker-compose up -d --build
+```
+Isso irá construir a imagem e subir o container em segundo plano.
+
+### Rodando com Docker (Manual)
 Para rodar a aplicação em um ambiente isolado e pronto para produção, você pode utilizar o Docker:
 
 1. **Build da imagem:**

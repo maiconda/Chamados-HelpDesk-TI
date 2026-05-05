@@ -105,3 +105,33 @@ A aplicação ficará disponível em `http://localhost:8501`.
 - **Portabilidade:** Funciona em qualquer servidor que suporte Docker (AWS, Azure, Google Cloud, etc.).
 - **Isolamento:** Evita conflitos de versões de bibliotecas no servidor.
 - **Pronto para Produção:** Configurado em modo *headless* para melhor performance.
+
+---
+
+## Etapa 4: Orquestração com Docker Compose
+
+**Objetivo:** Facilitar o processo de build e execução da aplicação através de um único arquivo de configuração, além de incluir ajustes necessários para funcionamento atrás de túneis (Cloudflare).
+
+### 1. Ajustes de Proxy (Cloudflare Tunnel)
+O `Dockerfile` foi atualizado com as seguintes variáveis de ambiente para permitir a comunicação via WebSockets e evitar bloqueios de segurança do Streamlit ao usar domínios externos:
+- `STREAMLIT_SERVER_ENABLE_CORS=false`
+- `STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION=false`
+
+### 2. Docker Compose (`docker-compose.yml`)
+Criamos um arquivo de orquestração que automatiza o mapeamento de portas e reinicialização automática do container.
+
+**Comandos Simplificados:**
+
+- **Para construir e subir a aplicação:**
+```bash
+docker-compose up -d --build
+```
+
+- **Para parar a aplicação:**
+```bash
+docker-compose down
+```
+
+### 3. Benefícios
+- **Automação:** Não é mais necessário digitar comandos longos com flags `-p` ou `-e`.
+- **Persistência:** O container está configurado para reiniciar sozinho caso o servidor reinicie (`restart: always`).

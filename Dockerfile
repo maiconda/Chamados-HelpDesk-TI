@@ -21,10 +21,12 @@ COPY vetorizador_tfidf.pkl .
 # Expõe a porta que o Streamlit usa por padrão
 EXPOSE 8501
 
-# Configurações para otimizar o Streamlit em produção
+# Configurações para otimizar o Streamlit em produção e permitir Proxy (Cloudflare)
 ENV STREAMLIT_SERVER_PORT=8501
 ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
 ENV STREAMLIT_SERVER_HEADLESS=true
+ENV STREAMLIT_SERVER_ENABLE_CORS=false
+ENV STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION=false
 
 # Comando para rodar a aplicação
 CMD ["streamlit", "run", "app.py"]

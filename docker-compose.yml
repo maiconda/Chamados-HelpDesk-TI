@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  helpdesk:
+    build: .
+    image: helpdesk-ti-app
+    container_name: helpdesk-ti-app
+    ports:
+      - "8501:8501"
+    restart: always
