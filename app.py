@@ -5,18 +5,12 @@ import pandas as pd
 import nltk
 from nltk.corpus import stopwords
 
-# ==========================================
-# CONFIGURAÇÕES DA PÁGINA
-# ==========================================
 st.set_page_config(
     page_title="HelpDesk TI - Classificador",
     page_icon="🤖",
     layout="wide"
 )
 
-# ==========================================
-# FUNÇÕES DE APOIO
-# ==========================================
 
 @st.cache_resource
 def carregar_recursos():
@@ -40,9 +34,6 @@ def limpar_texto(texto, stop_words):
     texto = " ".join([w for w in texto.split() if w not in stop_words])
     return texto
 
-# ==========================================
-# INTERFACE PRINCIPAL
-# ==========================================
 
 def main():
     modelo, vectorizer, stop_words = carregar_recursos()
@@ -63,7 +54,7 @@ def main():
     st.sidebar.metric("Acurácia do Modelo", "67.5%")
 
     # --- Cabeçalho ---
-    st.title("🤖 Classificador Automático de Chamados")
+    st.title("Classificador Automático de Chamados")
     st.markdown("""
     Esta ferramenta ajuda a triagem do HelpDesk, sugerindo a categoria mais provável para um novo problema relatado.
     """)
@@ -100,9 +91,6 @@ def main():
         else:
             st.warning("Por favor, digite um título para realizar a classificação.")
 
-    # --- Rodapé ---
-    st.markdown("---")
-    st.caption("Desenvolvido para a disciplina de Inteligência Artificial / Ciência de Dados.")
 
 if __name__ == "__main__":
     main()
