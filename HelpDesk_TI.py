@@ -1,4 +1,3 @@
-
 # =========================
 # INTEGRANTES DO GRUPO
 # =========================
@@ -30,6 +29,10 @@ from sklearn.naive_bayes import MultinomialNB
 import nltk
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
+
+# Para salvar o modelo
+import joblib
+import re
 
 
 # =========================
@@ -94,109 +97,38 @@ def analise_exploratoria(df):
     df_sem_id = df.drop(columns=['ID'], errors='ignore')
 
     df_sem_id.hist(figsize=(15,10)) # largura / altura
-    plt.show()
-
-
-    # sns.barplot(x=df['Status'].value_counts().index,
-    #             y=df['Status'].value_counts().values)
     # plt.show()
 
-    # Gráfico de Barras
-    # Análise de como os chamados estão distribuídos e quais suas classes, entre 'Em atendimento (atribuído)', 'Pendente' e 'Em atendimento (planejado)'
-    qtd_status = df['Status'].value_counts()
-
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x=qtd_status.index, y=qtd_status.values, hue=qtd_status.index, palette='muted', legend=False)
-    plt.title('Distribuição dos Status dos Chamados')
-    plt.xlabel('Status')
-    plt.ylabel('Número de Chamados')
-    plt.tight_layout()
-    plt.show()
-
-# =========================
-# CONTAGENS IMPORTANTES
-# =========================
 def analise_contagens(df):
-    # Análise da quantidade de Requerentes e de Técnicos presentes
-    num_requerentes = df['Requerente - Requerente'].nunique()
-    num_tecnicos = df['Atribuído - Técnico'].nunique()
-
-    print(f"Quantidade de Requerentes diferentes: {num_requerentes}")
-    print(f"Quantidade de Técnicos diferentes: {num_tecnicos}")
-
-    # Análise da quantidade de chamados feitos por cada Requerente
-    print("\nQuantidade de chamados por Requerente:")
-    print(df['Requerente - Requerente'].value_counts())
-
-    # Análise da quantidade de chamados atribuídos a cada Técnico
-    print("\nQuantidade de chamados por Técnico:")
-    print(df['Atribuído - Técnico'].value_counts())
-
-    # Análise da quantidade de chamados por Prioridade
-    # A coluna Prioridade está organizada da seguinte forma:
-    # Muito baixa: 0, Baixa: 1, Média: 2, Alta: 3, Muito alta: 4, Crítica: 5
-
-    print("\nQuantidade de chamados por Prioridade:")
-    print(df['Prioridade'].value_counts().sort_index()) # sort_index organiza em ordem crescente
-
-    # Para verificar em uma Prioridade específica
-    outra_prioridade = df[df['Prioridade'] == 2].shape[0]
-    print(f"\nQuantidade de chamados com Prioridade '2': {outra_prioridade}")
+    # sns.barplot(x=df['Status'].value_counts().index, y=df['Status'].value_counts())
+    # # plt.show()
+    pass
 
 # =========================
 # PRÉ-PROCESSAMENTO
 # =========================
 def preprocessar_texto(df, stop_words):
-    ##Seleção
-    df = df[['Título', 'Categoria']]
-    # remove valores nulos
-    df = df.dropna()
+    def limpar_texto(texto):
+        texto = str(texto).lower()
+        texto = re.sub(r'\d+', '', texto)
+        texto = re.sub(r'[^\w\s]', '', texto)
+        texto = " ".join([w for w in texto.split() if w not in stop_words])
+        return texto
 
-    print("\nQuantidade de dados:", len(df))
-    print("\n")
-
-    # transforma o texto em minúsculas
-    df['Titulo_limpo'] = df['Título'].str.lower()
-    
-    # remove números
-    df['Titulo_limpo'] = df['Titulo_limpo'].str.replace(r'\d+', '', regex=True)
-    
-    # remove pontuação
-    df['Titulo_limpo'] = df['Titulo_limpo'].str.replace(r'[^\w\s]', '', regex=True)
-
-    # remove stopwords
-    df['Titulo_limpo'] = df['Titulo_limpo'].apply(
-        lambda t: " ".join([w for w in t.split() if w not in stop_words])
-    )
-
-    print(df.head())
+    df['Título_Limpo'] = df['Título'].apply(limpar_texto)
     return df
 
-# =========================
-# DISTRIBUIÇÃO DE CATEGORIAS
-# =========================
 def analisar_categorias(df):
-    print("\nDistribuição das categorias:")
     print(df['Categoria'].value_counts())
 
-
-# =========================
-# VETORIZAÇÃO
-# =========================
 def vetorizar(df):
-    ## Vetorização (TF-IDF)
-    vectorizer = TfidfVectorizer(max_features=1000)
-    X = vectorizer.fit_transform(df['Titulo_limpo'])
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(df['Título_Limpo'])
     y = df['Categoria']
-
-    # Shape nos mostra a tupla (linhas, colunas)
-    # Linhas são o número de títulos de chamados processados.
-    # Colunas são o número de características (features) únicas que foram extraídas do texto.
-    print("Shape:", X.shape)
     return X, y, vectorizer
 
 # =========================
-# TREINO
+# TREINAMENTO
 # =========================
 def treinar_modelos(X_train, y_train):
     # Regressão Logística
@@ -218,9 +150,9 @@ def treinar_modelos(X_train, y_train):
 # =========================
 def avaliar_modelos(lr, nb, gb, X_test, y_test):
     modelos = {
-        "Logistic Regression": lr.predict(X_test),              # Avaliação: Regressão Logística
-        "Naive Bayes": nb.predict(X_test),                      # Avaliação: Naive Bayes Multinomial
-        "Gradient Boosting": gb.predict(X_test.toarray())       # Avaliação: Gradient Boosting
+        "Logistic Regression": lr.predict(X_test),
+        "Naive Bayes": nb.predict(X_test),
+        "Gradient Boosting": gb.predict(X_test.toarray())
     }
 
     for nome, y_pred in modelos.items():
@@ -232,21 +164,17 @@ def avaliar_modelos(lr, nb, gb, X_test, y_test):
 # PREVISÃO
 # =========================
 def prever(texto, vectorizer, modelos, stop_words):
-    # Aplica mesma limpeza de texto usada no treino do dataset
     texto_limpo = texto.lower()
     texto_limpo = re.sub(r'\d+', '', texto_limpo)
     texto_limpo = re.sub(r'[^\w\s]', '', texto_limpo)
     texto_limpo = " ".join([w for w in texto_limpo.split() if w not in stop_words])
 
-    # Vetorização
     vetor = vectorizer.transform([texto_limpo])
 
-    # Previsões
     pred_lr = modelos["Logistic Regression"].predict(vetor)[0]
     pred_nb = modelos["Naive Bayes"].predict(vetor)[0]
     pred_gb = modelos["Gradient Boosting"].predict(vetor.toarray())[0]
 
-    # Resultado
     print("\n============================")
     print("Texto original:", texto)
     print("Texto limpo:", texto_limpo)
@@ -259,8 +187,6 @@ def prever(texto, vectorizer, modelos, stop_words):
 # MAIN
 # =========================
 def main():
-    # Definindo a URL do dataset (link raw atualizado) baseado no Github Gists
-    # https://gist.github.com/felipebfava/9b465894e64a6bb4f26a4e144c23adf6
     url = "https://gist.githubusercontent.com/felipebfava/9b465894e64a6bb4f26a4e144c23adf6/raw/6ef001f1f4b6022c74a15556295f1f9cc2b8d884/gistfile1.txt"
 
     stop_words = carregar_stopwords()
@@ -268,17 +194,16 @@ def main():
     df = carregar_dados(url)
     df = anonimizar_dados(df)
 
-    analise_exploratoria(df)
+    # analise_exploratoria(df) # Removido # plt.show() para execução automática
 
-    analise_contagens(df)
+    # analise_contagens(df)
 
     df = preprocessar_texto(df, stop_words)
 
-    analisar_categorias(df)
+    # analisar_categorias(df)
 
     X, y, vectorizer = vetorizar(df)
 
-    ## Divisão treino/teste numa proporção de 70/30
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.3, random_state=42, stratify=y
     )
@@ -294,8 +219,14 @@ def main():
     }
 
     prever("computador não liga no laboratório", vectorizer, modelos, stop_words)
-    prever("projetor não está funcionando na sala", vectorizer, modelos, stop_words)
-    prever("internet caiu no bloco administrativo", vectorizer, modelos, stop_words)
+
+    # =========================
+    # SALVAR MODELO E VETORIZADOR (ETAPA 1)
+    # =========================
+    print("\nSalvando modelo e vetorizador...")
+    joblib.dump(lr, 'modelo_regressao_logistica.pkl')
+    joblib.dump(vectorizer, 'vetorizador_tfidf.pkl')
+    print("Arquivos 'modelo_regressao_logistica.pkl' e 'vetorizador_tfidf.pkl' salvos com sucesso!")
 
 if __name__ == "__main__":
     main()

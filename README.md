@@ -249,3 +249,40 @@ O suporte não é uma métrica de desempenho (como a acurácia), mas sim uma mé
 #### Modelos modernos (extra)
 - BERT (transformers)
 - Word embeddings
+
+### Exportação do Modelo e Vetorizador
+Para permitir o uso do modelo em aplicações externas sem a necessidade de re-treinamento, implementamos a persistência dos objetos utilizando a biblioteca `joblib`.
+
+- **Modelo Persistido:** `modelo_regressao_logistica.pkl`
+- **Vetorizador Persistido:** `vetorizador_tfidf.pkl` (essencial para manter a mesma padronização de tokens do treino)
+
+A exportação garante que o "aprendizado" do modelo seja preservado em arquivos físicos, permitindo carregamento instantâneo.
+
+### Interface Gráfica (Streamlit)
+Desenvolvemos uma interface web interativa utilizando a biblioteca **Streamlit**, focada na experiência do usuário final e na triagem ágil de chamados.
+
+**Funcionalidades da Interface:**
+- **Classificação em Tempo Real:** O usuário digita o título do chamado e recebe a categoria prevista imediatamente.
+- **Nível de Confiança:** Exibição da probabilidade da previsão, indicando o quão seguro o modelo está daquela classificação.
+- **Dashboard Informativo:** Barra lateral com informações do projeto, integrantes e métricas de desempenho.
+
+**Como executar a interface:**
+1. Certifique-se de ter as dependências instaladas (`pip install streamlit joblib`).
+2. No terminal, execute:
+```bash
+streamlit run app.py
+```
+
+### Rodando com Docker
+Para rodar a aplicação em um ambiente isolado e pronto para produção, você pode utilizar o Docker:
+
+1. **Build da imagem:**
+```bash
+docker build -t helpdesk-ti-app .
+```
+
+2. **Execução do container:**
+```bash
+docker run -p 8501:8501 helpdesk-ti-app
+```
+Acesse `http://localhost:8501` no seu navegador.
